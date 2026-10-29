@@ -1,2 +1,30 @@
-# PINN-LSTM-runoff
-This is the diagnostic code for physical constraints.To run the code, place all files in the same directory.
+# 径流预报 PINN-LSTM 复现包 v1
+
+生成日期：2026-10-30
+
+## 目录
+| 目录 | 内容 |
+|---|---|
+| `code/` | 14 个主实验脚本 + 硬约束模型 + 诊断/冻结/出图脚本 |
+| `data/` | 流域一 `output.xlsx`、流域二 `basin2_input_2013_2025.xlsx`（含备份） |
+| `results/` | 冻结表 `numbers_final.csv`、配置清单、种子1 JSON、说明文档、梯度诊断 `diag5.npz` |
+| `weights_s1/` | 14 个臂的**种子 1** 权重（每臂 ~0.2 MB） |
+| `logs/` | 100 轮阶梯、CE 臂、冻结表、梯度诊断的日志 |
+
+## 协议
+- 轮数 **100**；按**验证集**选最佳检查点，且最佳 epoch 须 ≤100；
+- 测试集只评一次；两处 60 天隔离带；
+- 流域一：5 302 / 1 467 / 580；流域二：3 220 / 603 / 604。
+
+## 复现
+```powershell
+python B7-A1e100.py 1          # 榔梨 A1 种子1 -> best_model_b7_a1e100_s1.pth
+python B13-W1.py 1             # 涟水 A1 种子1 -> best_model_b13_a1w1_s1.pth
+python freeze_numbers.py       # 14 臂 x 5 种子重评 -> numbers_final.csv
+python run_diag5.py            # 确定性梯度诊断 -> diag5.npz
+```
+
+## 注意
+1. **流域二 A0** 的权重由旧版脚本产生，重评 0.6511，训练日志 0.6529；冻结表采用日志值（0.7848 ± 0.1046）。
+2. 两流域"同名臂"配置不同：涟水 A1 曲率权重 = 0.0（榔梨 2.0）；涟水门控中心 = 0.0（榔梨 400）。
+3. 本包只含种子 1 权重；5 种子全量需按上面的脚本重跑（或向作者索取）。
